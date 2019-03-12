@@ -30,11 +30,11 @@ def make_maze(w, h):
     return array
 
 
-def show_me(current_position, maze, end_location, outtxt):
+def show_me(current_position, maze, end_location, outtxt, maze_size, area=5):
     clear_screen()  # Clears the terminal of previous input
     display_maze = []
     for item in maze:
-        display_maze.append(item)
+        display_maze.append(item.copy())
 
     end_square = display_maze[end_location['y'] * 2 - 1][end_location['x'] - 1]
     s = list(end_square)
@@ -46,9 +46,25 @@ def show_me(current_position, maze, end_location, outtxt):
     s[1] = '#'
     display_maze[current_position['y'] * 2 - 1][current_position['x'] - 1] = "".join(s)
 
-    for row in maze:
-        print("".join(row))
+    bounds = view_bounds(maze_size, current_position, area)
+    for i in range(bounds['l_y'], bounds['u_y']):
+        row = display_maze[i]
+        print("".join(row[bounds['l_x']:bounds['u_x']]))
+
+    # for row in display_maze:
+    #     print("".join(row))
     print(outtxt)
+
+
+def view_bounds(maze_size, current_position, area=5):
+    bounds = dict(l_x=0, u_x=0, l_y=0, u_y=0)
+    bounds['l_x'] = (current_position['x'] - area if current_position['x'] - area > 0 else 1) - 1
+    bounds['l_y'] = (current_position['y'] - area if current_position['y'] - area > 0 else 0) * 2 - 1
+    bounds['u_x'] = (current_position['x'] + area if current_position['x'] + area < maze_size['x'] else maze_size[
+        'x']) + 1
+    bounds['u_y'] = (current_position['y'] + area if current_position['y'] + area < maze_size['y'] else maze_size[
+        'y']) * 2 + 1
+    return bounds
 
 
 def generate_x_mark(maze_size):
@@ -72,32 +88,19 @@ def valid_moves(current_position, maze, maze_size):
 
     if current_position['y'] != 1 \
             and maze[current_position['y'] * 2 - 2][current_position['x'] - 1] in open_spaces['n']:
-        valid_moves_list['n'] = dict(x=current_position['x'], y=current_position['y']-1)
+        valid_moves_list['n'] = dict(x=current_position['x'], y=current_position['y'] - 1)
     if current_position['y'] != maze_size['y'] \
             and maze[current_position['y'] * 2][current_position['x'] - 1] in open_spaces['s']:
-        valid_moves_list['s'] = dict(x=current_position['x'], y=current_position['y']+1)
+        valid_moves_list['s'] = dict(x=current_position['x'], y=current_position['y'] + 1)
     if current_position['x'] != maze_size['x'] \
             and maze[current_position['y'] * 2 - 1][current_position['x']] in open_spaces['e']:
-        valid_moves_list['e'] = dict(x=current_position['x']+1, y=current_position['y'])
+        valid_moves_list['e'] = dict(x=current_position['x'] + 1, y=current_position['y'])
     if current_position['x'] != 1 \
             and maze[current_position['y'] * 2 - 1][current_position['x'] - 2] in open_spaces['w'] \
             and '|' not in maze[current_position['y'] * 2 - 1][current_position['x'] - 1]:
-        valid_moves_list['w'] = dict(x=current_position['x']-1, y=current_position['y'])
+        valid_moves_list['w'] = dict(x=current_position['x'] - 1, y=current_position['y'])
 
     return valid_moves_list
-
-
-def back_it_up(current_position, maze, maze_size):
-    """We need a way to undo."""
-    pass
-
-
-def process_move(move, current_position, options, maze):
-    if move in options.keys():
-        s = maze[current_position['y'] * 2 - 1][current_position['x'] - 1]
-        maze[current_position['y'] * 2 - 1][current_position['x'] - 1] = str.replace(s, '#', ' ')
-        return options[move]
-    return current_position
 
 
 def clear_screen():
@@ -127,7 +130,7 @@ def main():
             break
         except ValueError:
             print("that was not right... " + val)
-
+    area = 6
     maze_size = {'x': x, 'y': y}
     current_position = {'x': 1, 'y': 1}
     end_location = generate_x_mark(maze_size)
@@ -139,7 +142,7 @@ def main():
     move = ""
     while find_finished(current_position, end_location, turns):
         txt_for_player = "Running {} spaces!".format(run)
-        show_me(current_position, maze, end_location, txt_for_player)  # Show the maze
+        show_me(current_position, maze, end_location, txt_for_player, maze_size, area)  # Show the maze
 
         options = valid_moves(current_position, maze, maze_size)
         if len(options) == 0:
@@ -154,7 +157,7 @@ def main():
             while True:
                 move = input("'q' to quit. Pick a direction ({}): ".format("-".join(options)))
                 if move not in options.keys() and move != "q":
-                    show_me(current_position, maze, end_location, "That is not a valid option.")
+                    show_me(current_position, maze, end_location, "That is not a valid option.", maze_size, area)
                 else:
                     break
             turns += 1
@@ -165,7 +168,7 @@ def main():
             break
         else:
             last_position = current_position
-            current_position = process_move(move, current_position, options, maze)
+            current_position = options[move]
 
 
 if __name__ == '__main__':
