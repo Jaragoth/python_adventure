@@ -58,12 +58,16 @@ def show_me(current_position, maze, end_location, outtxt, maze_size, area=5):
 
 def view_bounds(maze_size, current_position, area=5):
     bounds = dict(l_x=0, u_x=0, l_y=0, u_y=0)
-    bounds['l_x'] = (current_position['x'] - area if current_position['x'] - area > 0 else 1) - 1
-    bounds['l_y'] = (current_position['y'] - area if current_position['y'] - area > 0 else 0) * 2 - 1
-    bounds['u_x'] = (current_position['x'] + area if current_position['x'] + area < maze_size['x'] else maze_size[
-        'x']) + 1
-    bounds['u_y'] = (current_position['y'] + area if current_position['y'] + area < maze_size['y'] else maze_size[
-        'y']) * 2 + 1
+    if area == 0:
+        bounds['u_x'] = maze_size['x'] + 1
+        bounds['u_y'] = maze_size['y'] * 2
+    else:
+        bounds['l_x'] = (current_position['x'] - area if current_position['x'] - area > 0 else 1) - 1
+        bounds['l_y'] = (current_position['y'] - area if current_position['y'] - area > 0 else 0) * 2 - 1
+        bounds['u_x'] = (current_position['x'] + area if current_position['x'] + area < maze_size['x'] else maze_size[
+            'x']) + 1
+        bounds['u_y'] = (current_position['y'] + area if current_position['y'] + area < maze_size['y'] else maze_size[
+            'y']) * 2 + 1
     return bounds
 
 
@@ -110,27 +114,28 @@ def clear_screen():
 
 def main():
     clear_screen()
-    default_levels = dict(d="8 4", easy="4 4", moderate="10 10", hard="20 20", expert="30 30")
+    default_levels = dict(d="8 4 4", easy="4 4 4", moderate="10 10 8", hard="20 20 10", expert="30 30 10")
 
     while True:
         print("'q' to exit")
         print("Pick a default difficulty: ({})".format("|".join(default_levels.keys())))
-        val = input("Or give us one or two inputs between 4 and 30 for the height and width of the maze:")
+        val = input(
+            "Or give us one or two or three inputs between 4 and 40 for the height and width and fog of the maze:")
         if val == "q":
             print("Have a nice day!")
             exit(0)
         elif val in default_levels:
             val = default_levels[val]
         elif len(val.split()) == 1 and str.isdigit(val):
-            val = val + " " + val
+            val = "{} {} {}".format(val, val, int(int(val) * .4))
         try:
-            x, y = [int(x) for x in val.split()]
-            if 3 >= x or x >= 31 or 3 >= y or y >= 31:
+            x, y, z = [int(x) for x in val.split()]
+            if 3 >= x or x >= 41 or 3 >= y or y >= 41 or (3 >= z or z >= 41):
                 raise ValueError
             break
         except ValueError:
             print("that was not right... " + val)
-    area = 6
+    area = z
     maze_size = {'x': x, 'y': y}
     current_position = {'x': 1, 'y': 1}
     end_location = generate_x_mark(maze_size)
