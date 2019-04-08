@@ -25,7 +25,7 @@ class Maze:
         self.make_maze()
 
     def lookup_or_make_space(self, x, y, z):
-        k = ",".join(map(str, [x, y, z]))
+        k = (x, y, z)
         if k in self.spaces.keys():
             return self.spaces[k]
         else:
@@ -95,7 +95,7 @@ class Space:
         self.x = x
         self.y = y
         self.z = z
-        self.name = ",".join(map(str, [x, y, z]))
+        self.id = (x, y, z)
 
     def adjoining_spaces(self):
         return [([self.x - 1, self.y, self.z]), ([self.x, self.y + 1, self.z]),
