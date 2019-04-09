@@ -175,6 +175,9 @@ def main():
             last_position = current_position
             current_position = options[move]
 
+def game():
+    print("Welcome to Python Adventure")
+
 
 if __name__ == '__main__':
     main()
