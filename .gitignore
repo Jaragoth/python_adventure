@@ -1,2 +1,4 @@
 /venv
 .vcs
+.idea/*
+__pycache__/

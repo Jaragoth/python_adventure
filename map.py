@@ -8,6 +8,7 @@ class Floor(Enum):
     Basic = 1
     Ladder = 2
     Slope = 3
+    EndOfMaze = 4
 
 
 class Maze:
@@ -20,11 +21,12 @@ class Maze:
         self.z = z
         self.view = view_size
         self.end_of_maze = [x, y, z]
-        self.vis = [
-                       [[0] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)]
-                   ] * self.z + [
-                       [[1] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)]
-                   ]
+        self.vis = []
+        for x in range(self.z):
+            self.vis.append([[0] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)])
+        self.vis.append(
+            [[1] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)]
+        )
         self.make_maze()
         self.draw_maze()
 
@@ -39,40 +41,43 @@ class Maze:
     def make_maze(self):
 
         def walk(x, y, z):
-            self.vis[x][y][z] = 1
+            self.vis[z][y][x] = 1
 
-            cs = self.lookup_or_make_space(x, y, z)
-            d = cs.adjoining_spaces()
-            shuffle(d)
-            for (xx, yy, zz) in d:
-                if self.vis[xx][yy][zz]:  # Have we been here before?
+            current_space = self.lookup_or_make_space(x, y, z)
+            directions = current_space.adjoining_spaces()
+            shuffle(directions)
+            for (xx, yy, zz) in directions:
+                if self.vis[zz][yy][xx] > 0:  # Have we been here before?
                     continue
-                ns = self.lookup_or_make_space(xx, yy, zz)
-                if xx == x:  # Did we move North or South?
+                new_space = self.lookup_or_make_space(xx, yy, zz)
+                if xx == x and yy == y:  # we went up or down.
+                    current_space.floorType = Floor.Ladder
+                    new_space.floorType = Floor.Ladder
+                    self.vis[z][y][x] = 2
+                    self.vis[zz][yy][xx] = 2
+                elif xx == x:  # Did we move North or South?
                     # hor[max(y, yy)][x] = "+  "
                     if y > yy:
                         # we moved North
-                        cs.north = 0
-                        ns.south = 0
+                        current_space.wall_north = 0
+                        new_space.wall_south = 0
                     else:
                         # we moved We moved South
-                        cs.south = 0
-                        ns.north = 0
+                        current_space.wall_south = 0
+                        new_space.wall_north = 0
                 elif yy == y:  # Did we move East or West?
                     # ver[y][max(x, xx)] = "   "
                     if x > xx:
                         # we moved West
-                        cs.west = 0
-                        ns.east = 0
+                        current_space.wall_west = 0
+                        new_space.wall_east = 0
                     else:
-                        cs.east = 0
-                        ns.west = 0
-                elif xx == x and yy == y:  # we went up or down.
-                    cs.floorType = Floor.Ladder
-                    ns.floorType = Floor.Ladder
-                self.spaces[ns.id] = ns
+                        current_space.wall_east = 0
+                        new_space.wall_west = 0
+
+                self.spaces[new_space.id] = new_space
                 walk(xx, yy, zz)
-            self.spaces[cs.id] = cs
+            self.spaces[current_space.id] = current_space
 
         walk(randrange(self.x), randrange(self.z), randrange(self.z))
 
@@ -106,16 +111,16 @@ class Space:
     def __init__(self, x, y, z=1):
         self.floorType = Floor.Basic  # maybe have slopes or ladders some time.
         self.visible = 0
-        self.north = 1
-        self.east = 1
-        self.south = 1
-        self.west = 1
+        self.wall_north = 1
+        self.wall_east = 1
+        self.wall_south = 1
+        self.wall_west = 1
         self.x = x
         self.y = y
         self.z = z
         self.id = (x, y, z)
 
     def adjoining_spaces(self):
-        return [([self.x - 1, self.y, self.z]), ([self.x, self.y + 1, self.z]),
-                ([self.x + 1, self.y, self.z]), ([self.x, self.y - 1, self.z]),
-                ([self.x, self.y, self.z + 1]), ([self.x, self.y, self.z - 1])]
+        return [(self.x - 1, self.y, self.z), (self.x, self.y + 1, self.z),
+                (self.x + 1, self.y, self.z), (self.x, self.y - 1, self.z),
+                (self.x, self.y, self.z + 1), (self.x, self.y, self.z - 1)]
