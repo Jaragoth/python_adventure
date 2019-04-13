@@ -2,21 +2,23 @@ from enum import Enum
 
 
 class ElementType(Enum):
-    item = 1
-    adventurer = 2
+    adventurer = 1
+    item = 2
     friend = 3
     monster = 4
+    place = 5
 
 
 class Base:
-    def __init__(self):
-        self.name = ''
-        self.x = 0
-        self.y = 0
-        self.z = 0
-        self.value = 0
-        self.active = 0
-        self.type = ElementType.item
+    def __init__(self, name='', x=0, y=0, z=0, value=0, active=0, base_type=ElementType.item, display='`'):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.z = z
+        self.value = value
+        self.active = active
+        self.type = base_type
+        self.display = display
 
     def my_location(self):
         return self.x, self.y, self.z
@@ -31,8 +33,14 @@ class Living(Base):
         self.speed = 0
 
 
+class Place(Base):
+    def __init__(self, x=0, y=0, z=0, name='', display=' '):
+        Base.__init__(x=x, y=y, z=z, name=name, display=display)
+        self.type = ElementType.place
+
+
 class Adventurer(Living):
-    def __init__(self, health=10, sight=6, name='Michael', x=0, y=0, z=0, speed=4):
+    def __init__(self, health=10, sight=6, name='Michael', x=0, y=0, z=0, speed=4, active=1):
         Living.__init__(self)
         self.inventory = dict()
         self.type = ElementType.adventurer
@@ -43,4 +51,5 @@ class Adventurer(Living):
         self.y = y
         self.z = z
         self.speed = speed
-
+        self.active = active
+        self.display = '@'

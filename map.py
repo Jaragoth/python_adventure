@@ -46,6 +46,7 @@ class Maze:
             current_space = self.lookup_or_make_space(x, y, z)
             directions = current_space.adjoining_spaces()
             shuffle(directions)
+            directions = directions + current_space.up_down()
             for (xx, yy, zz) in directions:
                 if self.vis[zz][yy][xx] > 0:  # Have we been here before?
                     continue
@@ -100,12 +101,13 @@ class Maze:
             row2 = []
             for x in range(lb, rb):
                 s = self.spaces[(x, y, z)]
-                row1.append('|  ' if s.wall_west else '   ')
+                val = ('|' if s.wall_west else ' ') + self.draw_element(x, y, z) + (
+                    '#' if s.floorType == Floor.Ladder else ' ')
+
+                row1.append(val)
                 row2.append('*--' if s.wall_south else '*  ')
             rows.append(row1)
             rows.append(row2)
-
-
 
         self.clear_screen()
         print('||--------- Python Adventure ---------||')
@@ -114,6 +116,9 @@ class Maze:
 
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
+
+    def draw_element(self, x, y, z):
+        return ' '
 
 
 class Space:
@@ -133,5 +138,7 @@ class Space:
 
     def adjoining_spaces(self):
         return [(self.x - 1, self.y, self.z), (self.x, self.y + 1, self.z),
-                (self.x + 1, self.y, self.z), (self.x, self.y - 1, self.z),
-                (self.x, self.y, self.z + 1), (self.x, self.y, self.z - 1)]
+                (self.x + 1, self.y, self.z), (self.x, self.y - 1, self.z)]
+
+    def up_down(self):
+        return [(self.x, self.y, self.z + 1), (self.x, self.y, self.z - 1)]
