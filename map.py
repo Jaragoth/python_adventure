@@ -16,17 +16,13 @@ class Maze:
 
     def __init__(self, x, y, z, view_size=10):
         self.spaces = dict()
+        self.elements = dict()
         self.x = x
         self.y = y
         self.z = z
         self.view = view_size
         self.end_of_maze = [x, y, z]
-        self.vis = []
-        for x in range(self.z):
-            self.vis.append([[0] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)])
-        self.vis.append(
-            [[1] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)]
-        )
+
         self.make_maze()
         self.draw_maze()
 
@@ -39,25 +35,30 @@ class Maze:
             return self.spaces[k]
 
     def make_maze(self):
+        vis = []
+        for x in range(self.z):
+            vis.append([[0] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)])
+        vis.append(
+            [[1] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)]
+        )
 
         def walk(x, y, z):
-            self.vis[z][y][x] = 1 if self.vis[z][y][x] == 0 else 2;
+            vis[z][y][x] = 1 if vis[z][y][x] == 0 else 2
 
             current_space = self.lookup_or_make_space(x, y, z)
             directions = current_space.adjoining_spaces()
             shuffle(directions)
             directions = directions + current_space.up_down()
             for (xx, yy, zz) in directions:
-                if self.vis[zz][yy][xx] > 0:  # Have we been here before?
+                if vis[zz][yy][xx] > 0:  # Have we been here before?
                     continue
                 new_space = self.lookup_or_make_space(xx, yy, zz)
                 if xx == x and yy == y:  # we went up or down.
                     current_space.floorType = Floor.Ladder
                     new_space.floorType = Floor.Ladder
-                    self.vis[z][y][x] = 2
-                    self.vis[zz][yy][xx] = 2
+                    vis[z][y][x] = 2
+                    vis[zz][yy][xx] = 2
                 elif xx == x:  # Did we move North or South?
-                    # hor[max(y, yy)][x] = "+  "
                     if y > yy:
                         # we moved North
                         current_space.wall_north = 0
@@ -67,7 +68,6 @@ class Maze:
                         current_space.wall_south = 0
                         new_space.wall_north = 0
                 elif yy == y:  # Did we move East or West?
-                    # ver[y][max(x, xx)] = "   "
                     if x > xx:
                         # we moved West
                         current_space.wall_west = 0
@@ -86,8 +86,7 @@ class Maze:
         """we should be able to see x number of square down the dark hall"""
 
     def draw_maze(self, adventurer=element.Adventurer()):
-        """ given an adventurer, lets draw the map around them. """
-        # TODO: Make a function to draw the map.
+        """ Lets draw the map. """
         loc = adventurer.my_location()
         lb = max(loc[0] - self.view / 2, 0)
         ub = max(loc[1] - self.view / 2, 0)
@@ -122,10 +121,23 @@ class Maze:
             print(''.join(row))
 
     def clear_screen(self):
+        """ Windows or mac, clear the screen. """
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def draw_element(self, x, y, z):
+        # TODO: This needs to take a location if no element is found, or the display is not set, or if the element
+        #  is not visible, return a space ' '
         return ' '
+
+    def add_element_to_maze(self, new_element=element.Base()):
+        # self.elements[new_element] = new_element
+        """ This will take an element and add it to the maze dictionary. """
+
+    def get_element_by_name(self, val):
+        """ This should take a string, and check for a element with that name and return it. """
+
+    def get_element_by_location(self, x, y, z):
+        """ Given a xyz location, will check for an element. """
 
 
 class Space:

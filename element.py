@@ -4,9 +4,8 @@ from enum import Enum
 class ElementType(Enum):
     adventurer = 1
     item = 2
-    friend = 3
+    place = 3
     monster = 4
-    place = 5
 
 
 class Base:
@@ -35,7 +34,7 @@ class Living(Base):
 
 class Place(Base):
     def __init__(self, x=0, y=0, z=0, name='', display=' '):
-        Base.__init__(x=x, y=y, z=z, name=name, display=display)
+        Base.__init__(self, x=x, y=y, z=z, name=name, display=display)
         self.type = ElementType.place
 
 
