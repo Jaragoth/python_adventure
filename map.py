@@ -112,7 +112,7 @@ class Maze:
             for x in range(lb, rb):
                 s = self.spaces[(x, y, z)]
                 val = ('|' if s.wall_west else ' ') + self.draw_element(x, y, z) + (
-                    '#' if s.floorType == Floor.Ladder else ' ')
+                    ' ' if s.floorType == Floor.Basic else '#')
                 row1.append(val)
                 row2.append('+--' if s.wall_south else '+  ')
             if rb == self.x:
