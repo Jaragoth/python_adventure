@@ -41,7 +41,7 @@ class Maze:
     def make_maze(self):
 
         def walk(x, y, z):
-            self.vis[z][y][x] = 1
+            self.vis[z][y][x] = 1 if self.vis[z][y][x] == 0 else 2;
 
             current_space = self.lookup_or_make_space(x, y, z)
             directions = current_space.adjoining_spaces()
@@ -94,12 +94,23 @@ class Maze:
         rb = min(lb + self.view, self.x)
         db = min(ub + self.view, self.y)
 
-        for x in range(lb, rb):
-            for y in range(ub, db):
+        rows = []
+        for y in range(ub, db):
+            row1 = []
+            row2 = []
+            for x in range(lb, rb):
                 s = self.spaces[(x, y, z)]
+                row1.append('|  ' if s.wall_west else '   ')
+                row2.append('*--' if s.wall_south else '*  ')
+            rows.append(row1)
+            rows.append(row2)
+
+
 
         self.clear_screen()
         print('||--------- Python Adventure ---------||')
+        for row in rows:
+            print(''.join(row))
 
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
