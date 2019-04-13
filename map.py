@@ -95,7 +95,12 @@ class Maze:
         rb = min(lb + self.view, self.x)
         db = min(ub + self.view, self.y)
 
-        rows = []
+        if ub == 0:
+            rows = [["+--"] * rb]
+            if rb == self.x:
+                rows[0].append('+')
+        else:
+            rows = []
         for y in range(ub, db):
             row1 = []
             row2 = []
@@ -103,9 +108,11 @@ class Maze:
                 s = self.spaces[(x, y, z)]
                 val = ('|' if s.wall_west else ' ') + self.draw_element(x, y, z) + (
                     '#' if s.floorType == Floor.Ladder else ' ')
-
                 row1.append(val)
-                row2.append('*--' if s.wall_south else '*  ')
+                row2.append('+--' if s.wall_south else '+  ')
+            if rb == self.x:
+                row1.append('|')
+                row2.append('+')
             rows.append(row1)
             rows.append(row2)
 
