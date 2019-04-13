@@ -9,6 +9,8 @@ class Floor(Enum):
     Ladder = 2
     Slope = 3
     EndOfMaze = 4
+    LadderUp = 4
+    LadderDown = 5
 
 
 class Maze:
@@ -54,8 +56,12 @@ class Maze:
                     continue
                 new_space = self.lookup_or_make_space(xx, yy, zz)
                 if xx == x and yy == y:  # we went up or down.
-                    current_space.floorType = Floor.Ladder
-                    new_space.floorType = Floor.Ladder
+                    if z > zz:
+                        current_space.floorType = Floor.LadderUp if current_space.floorType == Floor.Basic else Floor.Ladder
+                        new_space.floorType = Floor.LadderDown if new_space.floorType == Floor.Basic else Floor.Ladder
+                    else:
+                        current_space.floorType = Floor.LadderDown if current_space.floorType == Floor.Basic else Floor.Ladder
+                        new_space.floorType = Floor.LadderUp if new_space.floorType == Floor.Basic else Floor.Ladder
                     vis[z][y][x] = 2
                     vis[zz][yy][xx] = 2
                 elif xx == x:  # Did we move North or South?
@@ -127,6 +133,8 @@ class Maze:
     def draw_element(self, x, y, z):
         # TODO: This needs to take a location if no element is found, or the display is not set, or if the element
         #  is not visible, return a space ' '
+        elms = self.get_elements_by_location(x, y, z)
+
         return ' '
 
     def add_element_to_maze(self, new_element=element.Base()):
@@ -136,8 +144,13 @@ class Maze:
     def get_element_by_name(self, val):
         """ This should take a string, and check for a element with that name and return it. """
 
-    def get_element_by_location(self, x, y, z):
+    def get_elements_by_location(self, x, y, z):
         """ Given a xyz location, will check for an element. """
+        elm = []
+        for e in self.elements:
+            if e.my_location == (x, y, z):
+                elm.append(e)
+        return elm
 
 
 class Space:
@@ -161,3 +174,17 @@ class Space:
 
     def up_down(self):
         return [(self.x, self.y, self.z + 1), (self.x, self.y, self.z - 1)]
+
+    def valid_moves(self):
+        moves = dict()
+        if not self.wall_north:
+            moves['n'] = (self.x, self.y - 1, self.z)
+        if not self.wall_south:
+            moves['s'] = (self.x, self.y + 1, self.z)
+        if not self.wall_east:
+            moves['e'] = (self.x + 1, self.y, self.z)
+        if not self.wall_west:
+            moves['w'] = (self.x - 1, self.y, self.z)
+        # TODO: I need to make it return an up or down for ladders.
+        return moves
+
