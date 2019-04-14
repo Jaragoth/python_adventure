@@ -16,17 +16,18 @@ class Floor(Enum):
 class Maze:
     """ A maze is a collection of spaces arrange in a way where there is one way through them to a goal."""
 
-    def __init__(self, x, y, z, view_size=10):
+    def __init__(self, x=8, y=8, z=1, view_size=10):
         self.spaces = dict()
         self.elements = dict()
         self.x = x
         self.y = y
         self.z = z
         self.view = view_size
-        self.end_of_maze = [x, y, z]
+        self.add_element_to_maze(element.Place(x, y, z, "The End", 'O'))
+        self.focus = None
 
         self.make_maze()
-        self.draw_maze()
+        # self.draw_maze()
 
     def lookup_or_make_space(self, x, y, z):
         k = (x, y, z)
@@ -91,9 +92,12 @@ class Maze:
     def update_visable_path(self, adventurer=element.Adventurer):
         """we should be able to see x number of square down the dark hall"""
 
-    def draw_maze(self, adventurer=element.Adventurer()):
+    def draw_maze(self):
         """ Lets draw the map. """
-        loc = adventurer.my_location()
+        if self.focus is None:
+            loc = (0, 0, 0)
+        else:
+            loc = self.elements[self.focus].my_location()
         lb = max(loc[0] - self.view / 2, 0)
         ub = max(loc[1] - self.view / 2, 0)
         z = loc[2]
@@ -131,26 +135,35 @@ class Maze:
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def draw_element(self, x, y, z):
-        # TODO: This needs to take a location if no element is found, or the display is not set, or if the element
-        #  is not visible, return a space ' '
-        elms = self.get_elements_by_location(x, y, z)
 
-        return ' '
+        elms = self.get_elements_by_location(x, y, z)
+        if len(elms) == 1:
+            val = elms[0].display
+        elif len(elms) == 0:
+            val = ' '
+        else:
+            val = next(elm.display for elm in elms for e in element.ElementType if elm.type == e)
+
+        return val
 
     def add_element_to_maze(self, new_element=element.Base()):
-        # self.elements[new_element] = new_element
+        self.elements[new_element.id] = new_element
+        if new_element.display == '@':
+            self.focus = new_element.id
         """ This will take an element and add it to the maze dictionary. """
 
-    def get_element_by_name(self, val):
+    def get_element_by_name(self, look_for, find_one=True, element_type=9999):
         """ This should take a string, and check for a element with that name and return it. """
+        lst = [n for n in self.elements.values() if
+               n.name == look_for and (element_type == 9999 or element_type == n.type)]
+        if find_one:
+            return lst[0]
+        else:
+            return lst
 
     def get_elements_by_location(self, x, y, z):
         """ Given a xyz location, will check for an element. """
-        elm = []
-        for e in self.elements:
-            if e.my_location == (x, y, z):
-                elm.append(e)
-        return elm
+        return [e for e in self.elements.values() if e.x == x and e.y == y and e.z == z]
 
 
 class Space:
@@ -185,6 +198,8 @@ class Space:
             moves['e'] = (self.x + 1, self.y, self.z)
         if not self.wall_west:
             moves['w'] = (self.x - 1, self.y, self.z)
-        # TODO: I need to make it return an up or down for ladders.
+        if self.floorType == Floor.Ladder or self.floorType == Floor.LadderUp:
+            moves['u'] = (self.x, self.y, self.z + 1)
+        if self.floorType == Floor.Ladder or self.floorType == Floor.LadderDown:
+            moves['d'] = (self.x, self.y, self.z - 1)
         return moves
-

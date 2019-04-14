@@ -1,4 +1,5 @@
 from enum import Enum
+import game_map
 
 
 class ElementType(Enum):
@@ -18,9 +19,15 @@ class Base:
         self.active = active
         self.type = base_type
         self.display = display
+        self.id = id(self)
 
     def my_location(self):
         return self.x, self.y, self.z
+
+    def move(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
 
 
 class Living(Base):
@@ -30,6 +37,9 @@ class Living(Base):
         self.maxHealth = 0
         self.sight = 0
         self.speed = 0
+
+    def my_moves(self, the_map):
+        return the_map.lookup_or_make_space(self.x, self.y, self.z).valid_moves()
 
 
 class Place(Base):
@@ -52,3 +62,4 @@ class Adventurer(Living):
         self.speed = speed
         self.active = active
         self.display = '@'
+
