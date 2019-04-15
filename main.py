@@ -1,6 +1,8 @@
 from random import shuffle, randrange
 import os
-
+import game_map
+import element
+import sys
 
 def make_maze(w, h):
     vis = [[0] * w + [1] for _ in range(h)] + [[1] * (w + 1)]
@@ -177,7 +179,28 @@ def main():
 
 def game():
     print("Welcome to Python Adventure")
+    # while True:
+        # adv_name = input("What is you name? ")
+        # rsp = input("Hello '{}', is that really what you want me to call you? (y/n): ".format(adv_name) )
+        # if rsp == 'y':
+        #     break
+        # else:
+        #     print("ok, trying again.")
+    adv = element.Adventurer(name='The Dude')
+    m = game_map.Maze(z=2)
+    m.add_element_to_maze(adv)
+    while True:
+        m.draw_maze()
+        d = adv.my_moves(m)
+
+        while True:
+            move = input("Pick an action: ({})  ".format(','.join(d.keys())))
+            if move in d.keys():
+                break
+            if move == 'q':
+                sys.exit()
+        adv.move(d[move][0],d[move][1],d[move][2])
 
 
 if __name__ == '__main__':
-    main()
+    game()

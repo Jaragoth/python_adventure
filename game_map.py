@@ -39,7 +39,7 @@ class Maze:
 
     def make_maze(self):
         vis = []
-        for x in range(self.z):
+        for _ in range(self.z):
             vis.append([[0] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)])
         vis.append(
             [[1] * self.x + [1] for _ in range(self.y)] + [[1] * (self.x + 1)]
@@ -58,11 +58,11 @@ class Maze:
                 new_space = self.lookup_or_make_space(xx, yy, zz)
                 if xx == x and yy == y:  # we went up or down.
                     if z > zz:
-                        current_space.floorType = Floor.LadderUp if current_space.floorType == Floor.Basic else Floor.Ladder
-                        new_space.floorType = Floor.LadderDown if new_space.floorType == Floor.Basic else Floor.Ladder
-                    else:
                         current_space.floorType = Floor.LadderDown if current_space.floorType == Floor.Basic else Floor.Ladder
                         new_space.floorType = Floor.LadderUp if new_space.floorType == Floor.Basic else Floor.Ladder
+                    else:
+                        current_space.floorType = Floor.LadderUp if current_space.floorType == Floor.Basic else Floor.Ladder
+                        new_space.floorType = Floor.LadderDown if new_space.floorType == Floor.Basic else Floor.Ladder
                     vis[z][y][x] = 2
                     vis[zz][yy][xx] = 2
                 elif xx == x:  # Did we move North or South?
@@ -88,6 +88,7 @@ class Maze:
             self.spaces[current_space.id] = current_space
 
         walk(randrange(self.x), randrange(self.z), randrange(self.z))
+        print('Maze Made!')
 
     def update_visable_path(self, adventurer=element.Adventurer):
         """we should be able to see x number of square down the dark hall"""
@@ -98,14 +99,14 @@ class Maze:
             loc = (0, 0, 0)
         else:
             loc = self.elements[self.focus].my_location()
-        lb = max(loc[0] - self.view / 2, 0)
-        ub = max(loc[1] - self.view / 2, 0)
+        lb = max(loc[0] - int(self.view / 2), 0)
+        ub = max(loc[1] - int(self.view / 2), 0)
         z = loc[2]
         rb = min(lb + self.view, self.x)
         db = min(ub + self.view, self.y)
 
         if ub == 0:
-            rows = [["+--"] * rb]
+            rows = [["+--"] * (rb-lb)]
             if rb == self.x:
                 rows[0].append('+')
         else:
@@ -127,6 +128,7 @@ class Maze:
 
         self.clear_screen()
         print('||--------- Python Adventure ---------||')
+        print('Level: {}'.format(loc[2] + 1))
         for row in rows:
             print(''.join(row))
 
